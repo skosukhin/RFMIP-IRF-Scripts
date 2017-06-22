@@ -20,6 +20,7 @@ def copyVar(nc_in, nc_out, name, newname=None) :
 
 atmos_file = Dataset('multiple_input4MIPs_radiation_RFMIP_UColorado-RFMIP-0-4_none.nc', mode='r') 
 # Available from https://www.earthsystemcog.org/projects/rfmip/resources/
+# or from https://esgf-node.llnl.gov/search/input4mips/ ; search for "RFMIP" 
 
 short_names = ['rlu','rsu', 'rld', 'rsd'] 
 stand_names = ['upwelling_longwave_flux_in_air','upwelling_shortwave_flux_in_air', 
@@ -28,20 +29,29 @@ stand_names = ['upwelling_longwave_flux_in_air','upwelling_shortwave_flux_in_air
 # Attributes are take from https://docs.google.com/document/d/1h0r8RZr_f3-8egBMMh7aqLwy3snpD6_MrDz1q8n5XUk/edit
 # Data reference syntax attributes 
 drs_attrs = { 
-  "activity_id"  :"RFMIP", #  (from CMIP6_activity_id.json)
+  "activity_id"  :"RFMIP",   # (from CMIP6_activity_id.json)
   "product"      :"model_output",
-  "experiment_id": "rad-irf", #(from CMIP6_experiment_id.json)
-  "table_id"     :"Efx", # (per http://clipc-services.ceda.ac.uk/dreq/u/efc0de22-5629-11e6-9079-ac72891c3257.html) 
+  "experiment_id":"rad-irf", # (from CMIP6_experiment_id.json)
+  "table_id"     :"Efx",     # (per http://clipc-services.ceda.ac.uk/dreq/u/efc0de22-5629-11e6-9079-ac72891c3257.html) 
   "frequency"    :"fx", 
   "sub_experiment_id":"none"} 
 
+expt_attrs = { 
+  "Conventions"         :"CF-1.7 CMIP-6.0", 
+  "experiment"          :"rad_irf", 
+  "sub_experiment"      :"none", 
+  "realization_index"   :1, 
+  "initialization_index":1,
+  "nominal_resolution"  :"50 km", 
+  "grid"                :"columns sampled from ERA-Interim, radiative fluxes computed indepednently"} 
+  
 # Further required attributes, uniform across submissions 
 std_attrs = { 
-  "Conventions":"CF-1.7 CMIP-6.0", 
   "data_specs_version":"1.00.12", 
-  "experiment":"rad_irf", 
-  "sub_experiment":"none", 
-  "forcing_index":1, 
+  "forcing_index":1, # This values follows page 2074 in https://dx.doi.org/10.5194/gmd-10-2057-2017
+                     # 1 = calculations uses all available greenhouse gases
+                     # 2 = calculation uses CO2, CH4, N2O, CFC11eq
+                     # 3 = calculation uses CO2, CH4, N2O, CFC12eq, HFC-134eq
   "physics_index":1} 
 
 # Model/institution specific attributes 
@@ -63,6 +73,7 @@ for short, std in zip(short_names, stand_names) :
     out_file = Dataset(out_file_name, mode='w', FORMAT='NETCDF4_CLASSIC')
     out_file.setncatts(drs_attrs) 
     out_file.setncatts(std_attrs) 
+    out_file.setncatts(expt_attrs) 
     out_file.setncatts(model_attrs) 
     out_file.setncatts(sub_attrs) 
     d = out_file.createDimension('expt',  atmos_file.dimensions['expt'].size) 

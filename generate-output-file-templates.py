@@ -27,7 +27,44 @@ short_names = ['rlu','rsu', 'rld', 'rsd']
 stand_names = ['upwelling_longwave_flux_in_air','upwelling_shortwave_flux_in_air',
                'downwelling_longwave_flux_in_air','downwelling_shortwave_flux_in_air']
 
-# Attributes are take from https://docs.google.com/document/d/1h0r8RZr_f3-8egBMMh7aqLwy3snpD6_MrDz1q8n5XUk/edit
+#
+# Required attributes, uniform across submissions
+#
+std_attrs = {
+  "data_specs_version":"01.00.12",
+  "physics_index":1}
+
+#
+# Model/institution specific attributes
+#
+institution_id = "AER"
+source_id      = "LBLRTM-12-8"
+variant_label  = "r1i1p1f1"
+model_attrs = {
+  "institution_id"  :"AER",
+  "institution"     :"Research and Climate Group, Atmospheric and Environmental Research, 131 Hartwell Avenue, Lexington, MA 02421, USA",
+  "source_id"       :source_id,
+  "version"         :"12.8",
+  "source"          :"LBLRTM 12.8 (2017): \naerosol: none\natmos: none\natmosChem: none\nland: none\nlandIce: none\nocean: none\nocnBgchem: none\nseaIce: none",
+                     # Needs to match entry for source_id in CMIP6 controlled vocabulary
+  "further_info_url":"https://furtherinfo.es-doc.org/CMIP6." + institution_id + "." + source_id + ".rad-irf.none." + variant_label,
+  "forcing_index"   :1, # This values follows page 2074 in https://dx.doi.org/10.5194/gmd-10-2057-2017
+                     # 1 = calculations uses all available greenhouse gases
+                     # 2 = calculation uses CO2, CH4, N2O, CFC11eq
+                     # 3 = calculation uses CO2, CH4, N2O, CFC12eq, HFC-134eq
+  "license"         :'CMIP6 model data produced by AER is licensed under a Creative Commons Attribution "Share Alike 4.0" International License (https://creativecommons.org/licenses). ' +
+                      "Consult https://pcmdi.llnl.gov/CMIP6/TermsOfUse for terms of use governing CMIP6 output, including citation requirements and proper acknowledgment. " +
+                      "Further information about this data, including some limitations, can be found via the further_info_url (recorded as a global attribute in this file). " +
+                      "The data producers and data providers make no warranty, either express or implied, including, but not limited to, warranties of merchantability and fitness for a particular purpose. " +
+                      "All liabilities arising from the supply of the information (including any liability arising in negligence) are excluded to the fullest extent permitted by law." }
+
+# Submission attrs
+sub_attrs = {
+  'creation_date':time.strftime("%Y-%m-%dT%H:%M:%SZ",time.gmtime()),
+  'tracking_id'  : '/'.join(['hdl:21.14100',str(uuid.uuid4())]),
+  "variant_label":variant_label}
+
+# Attributes are taken from https://docs.google.com/document/d/1h0r8RZr_f3-8egBMMh7aqLwy3snpD6_MrDz1q8n5XUk/edit
 # Data reference syntax attributes
 drs_attrs = {
   "activity_id"  :"RFMIP",   # (from CMIP6_activity_id.json)
@@ -51,35 +88,6 @@ expt_attrs = {
   "grid_label"          :"gn",
   "grid"                :"columns sampled from ERA-Interim, radiative fluxes computed independently"}
 
-# Further required attributes, uniform across submissions
-std_attrs = {
-  "data_specs_version":"01.00.12",
-  "forcing_index":1, # This values follows page 2074 in https://dx.doi.org/10.5194/gmd-10-2057-2017
-                     # 1 = calculations uses all available greenhouse gases
-                     # 2 = calculation uses CO2, CH4, N2O, CFC11eq
-                     # 3 = calculation uses CO2, CH4, N2O, CFC12eq, HFC-134eq
-  "physics_index":1}
-
-# Model/institution specific attributes
-variant_label = "r1i1p1f1"
-model_attrs = {
-  "institution_id"  :"AER",
-  "institution"     :"Research and Climate Group, Atmospheric and Environmental Research, 131 Hartwell Avenue, Lexington, MA 02421, USA",
-  "source_id"       :"LBLRTM-12-8",
-  "source"          :"LBLRTM 12.8 (2017): \naerosol: none\natmos: none\natmosChem: none\nland: none\nlandIce: none\nocean: none\nocnBgchem: none\nseaIce: none",
-  "further_info_url":"https://furtherinfo.es-doc.org/CMIP6.AER.LBLRTM-12-8.rad-irf.none." + variant_label,
-  "license"         :'CMIP6 model data produced by AER is licensed under a Creative Commons Attribution "Share Alike 4.0" International License (https://creativecommons.org/licenses). ' +
-                      "Consult https://pcmdi.llnl.gov/CMIP6/TermsOfUse for terms of use governing CMIP6 output, including citation requirements and proper acknowledgment. " +
-                      "Further information about this data, including some limitations, can be found via the further_info_url (recorded as a global attribute in this file). " +
-                      "The data producers and data providers make no warranty, either express or implied, including, but not limited to, warranties of merchantability and fitness for a particular purpose. " +
-                      "All liabilities arising from the supply of the information (including any liability arising in negligence) are excluded to the fullest extent permitted by law." }
-
-# Submission attrs
-sub_attrs = {
-  'creation_date':time.strftime("%Y-%m-%d%H:%M:%SZ",time.gmtime()),
-  'tracking_id'  : '/'.join(['hdl:21.14100',str(uuid.uuid4())]),
-  "variant_label":variant_label,
-  "version"      :"12.8"}
 
 for short, std in zip(short_names, stand_names) :
     out_file_name = short + ".nc"

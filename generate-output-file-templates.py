@@ -7,6 +7,7 @@
 #
 # ---------------------------------------------------------------------------------
 from netCDF4 import Dataset
+import numpy as np
 import time, uuid
 # ---------------------------------------------------------------------------------
 # Copy a variable and all its attributes from one netCDF file to another
@@ -24,12 +25,12 @@ atmos_file = Dataset('multiple_input4MIPs_radiation_RFMIP_UColorado-RFMIP-1-1_no
 # or from https://esgf-node.llnl.gov/search/input4mips/ ; search for "RFMIP"
 
 #
-# Model/institution specific attributes - replace these with values suitable for your institution, model, etc. 
+# Model/institution specific attributes - replace these with values suitable for your institution, model, etc.
 #
 institution_id = "AER"
 source_id      = "LBLRTM-12-8"
-physics_index = 1 # Use, e.g. for different approximations
-forcing_index = 1  # This values follows page 2074 in https://dx.doi.org/10.5194/gmd-10-2057-2017
+physics_index = np.int32(1) # Use, e.g. for different approximations
+forcing_index = np.int32(1)  # This values follows page 2074 in https://dx.doi.org/10.5194/gmd-10-2057-2017
                    # 1 = calculations uses all available greenhouse gases
                    # 2 = calculation uses CO2, CH4, N2O, CFC11eq
                    # 3 = calculation uses CO2, CH4, N2O, CFC12eq, HFC-134eq
@@ -42,7 +43,7 @@ model_attrs = {
   "source"          :"LBLRTM 12.8 (2017): \naerosol: none\natmos: none\natmosChem: none\nland: none\nlandIce: none\nocean: none\nocnBgchem: none\nseaIce: none",
                      # Needs to match entry for source_id in CMIP6 controlled vocabulary
   "further_info_url":"https://furtherinfo.es-doc.org/CMIP6." + institution_id + "." + source_id + ".rad-irf.none." + variant_label,
-  "forcing_index"   :int(forcing_index),
+  "forcing_index"   :np.int32(forcing_index),
   "license"         :"CMIP6 model data produced by " + institution_id + " is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (https://creativecommons.org/licenses). " +
                      "Consult https://pcmdi.llnl.gov/CMIP6/TermsOfUse for terms of use governing CMIP6 output, including citation requirements and proper acknowledgment. " +
                      "Further information about this data, including some limitations, can be found via the further_info_url (recorded as a global attribute in this file) and at https://pcmdi.llnl.gov/." +
@@ -66,7 +67,7 @@ sub_attrs = {
 # Data reference syntax attributes
 drs_attrs = {
   "activity_id"  :"RFMIP",   # (from CMIP6_activity_id.json)
-  "product"      :"model_output",
+  "product"      :"model-output",
   "experiment_id":"rad-irf", # (from CMIP6_experiment_id.json)
   "table_id"     :"Efx",     # (per http://clipc-services.ceda.ac.uk/dreq/u/efc0de22-5629-11e6-9079-ac72891c3257.html)
   "frequency"    :"fx",
@@ -78,8 +79,8 @@ expt_attrs = {
   "experiment"          :"rad_irf",
   "sub_experiment"      :"none",
   "product"             :"model-output",
-  "realization_index"   :int(1),
-  "initialization_index":int(1),
+  "realization_index"   :np.int32(1),
+  "initialization_index":np.int32(1),
   "source_type"         :"RAD",
   "nominal_resolution"  :"10 km",
   "realm"               :"atmos",
@@ -93,7 +94,7 @@ stand_names = ['upwelling_longwave_flux_in_air','upwelling_shortwave_flux_in_air
 for short, std in zip(short_names, stand_names) :
     out_file_name = short + ".nc"
     print('Creating ' + out_file_name)
-    out_file = Dataset(out_file_name, mode='w', FORMAT='NETCDF4_CLASSIC')
+    out_file = Dataset(out_file_name, mode='w', FORMAT='NETCDF3_CLASSIC')
     out_file.setncatts(drs_attrs)
     out_file.setncatts(std_attrs)
     out_file.setncatts(expt_attrs)

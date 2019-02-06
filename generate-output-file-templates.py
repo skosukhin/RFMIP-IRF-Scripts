@@ -29,7 +29,7 @@ atmos_file = Dataset('multiple_input4MIPs_radiation_RFMIP_UColorado-RFMIP-1-1_no
 #
 institution_id = "AER"
 source_id      = "LBLRTM-12-8"
-physics_index = np.int32(1) # Use, e.g. for different approximations
+physics_index = np.int32(1)  # Use, e.g. for different approximations
 forcing_index = np.int32(1)  # This values follows page 2074 in https://dx.doi.org/10.5194/gmd-10-2057-2017
                    # 1 = calculations uses all available greenhouse gases
                    # 2 = calculation uses CO2, CH4, N2O, CFC11eq
@@ -94,7 +94,7 @@ stand_names = ['upwelling_longwave_flux_in_air','upwelling_shortwave_flux_in_air
 for short, std in zip(short_names, stand_names) :
     out_file_name = short + ".nc"
     print('Creating ' + out_file_name)
-    out_file = Dataset(out_file_name, mode='w', FORMAT='NETCDF3_CLASSIC')
+    out_file = Dataset(out_file_name, mode='w', FORMAT='NETCDF4_CLASSIC')
     out_file.setncatts(drs_attrs)
     out_file.setncatts(std_attrs)
     out_file.setncatts(expt_attrs)
@@ -112,6 +112,6 @@ for short, std in zip(short_names, stand_names) :
     v.setncatts({'variable_id'  :short,
                  'standard_name':std,
                  'units'        :'W m-2',
-                 'coordinates'  : 'lon lat time'})
+                 'coordinates'  :'lon lat time'})
     copyVar(atmos_file, out_file, 'profile_weight')
     out_file.close()

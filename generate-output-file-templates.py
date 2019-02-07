@@ -55,7 +55,7 @@ model_attrs = {
 #
 std_attrs = {
   "data_specs_version":"01.00.29",
-  "physics_index":int(physics_index)}
+  "physics_index":np.int32(physics_index)}
 
 # Submission attrs
 sub_attrs = {

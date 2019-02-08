@@ -8,7 +8,7 @@
 # ---------------------------------------------------------------------------------
 from netCDF4 import Dataset
 import numpy as np
-import time, uuid
+import time, uuid, argparse
 # ---------------------------------------------------------------------------------
 # Copy a variable and all its attributes from one netCDF file to another
 #
@@ -24,24 +24,48 @@ atmos_file = Dataset('multiple_input4MIPs_radiation_RFMIP_UColorado-RFMIP-1-1_no
 # Available from https://www.earthsystemcog.org/projects/rfmip/resources/
 # or from https://esgf-node.llnl.gov/search/input4mips/ ; search for "RFMIP"
 
+parser = argparse.ArgumentParser(description='Create CMIP6/ESGF-compliant output files for RFMIP-IRF.')
+parser.add_argument('--institution_id', type=str, \
+                    default = "AER",
+                    help='Institution ID, must match CMIP Controlled Vocabulary at https://github.com/WCRP-CMIP/CMIP6_CVs/blob/master/CMIP6_institution_id.json')
+parser.add_argument('--institution', type=str, \
+                    default = "Research and Climate Group, Atmospheric and Environmental Research, 131 Hartwell Avenue, Lexington, MA 02421, USA", \
+                    help='Institution, must match CMIP Controlled Vocabulary at https://github.com/WCRP-CMIP/CMIP6_CVs/blob/master/CMIP6_institution_id.json')
+parser.add_argument('--source_id', type=str, \
+                    default = "LBLRTM-12-8",
+                    help='Source ID, must match CMIP Controlled Vocabulary at https://github.com/WCRP-CMIP/CMIP6_CVs/blob/master/CMIP6_source_id.json')
+parser.add_argument('--source', type=str, \
+                    default = "LBLRTM 12.8 (2017): \naerosol: none\natmos: none\natmosChem: none\nland: none\nlandIce: none\nocean: none\nocnBgchem: none\nseaIce: none",
+                    help='Source ID, must match CMIP Controlled Vocabulary at https://github.com/WCRP-CMIP/CMIP6_CVs/blob/master/CMIP6_source_id.json')
+parser.add_argument('--version', type=str, \
+                    default = "12.8", \
+                    help='Forcing index (1 = all available greenhouse gases; 2 =  CO2, CH4, N2O, CFC11eq;  3 = CO2, CH4, N2O, CFC12eq, HFC-134eq)')
+parser.add_argument('--forcing_index', type=int, \
+                    default = 1,      \
+                    help='Forcing index (1 = all available greenhouse gases; 2 =  CO2, CH4, N2O, CFC11eq;  3 = CO2, CH4, N2O, CFC12eq, HFC-134eq)')
+parser.add_argument('--physics_index', type=int, \
+                    default = 1,      \
+                    help='Physics index, e.g. for different approximations')
+args = parser.parse_args()
+
 #
-# Model/institution specific attributes - replace these with values suitable for your institution, model, etc.
+# Model/institution specific attributes
 #
-institution_id = "AER"
-source_id      = "LBLRTM-12-8"
-physics_index = np.int32(1)  # Use, e.g. for different approximations
-forcing_index = np.int32(1)  # This values follows page 2074 in https://dx.doi.org/10.5194/gmd-10-2057-2017
-                   # 1 = calculations uses all available greenhouse gases
-                   # 2 = calculation uses CO2, CH4, N2O, CFC11eq
-                   # 3 = calculation uses CO2, CH4, N2O, CFC12eq, HFC-134eq
+institution_id = args.institution_id
+institution    = args.institution
+source_id      = args.source_id
+source         = args.source
+version        = args.version
+physics_index = np.int32(args.physics_index)
+forcing_index = np.int32(args.forcing_index)
+
 variant_label  = "r1i1p{0}f{1}".format(physics_index,forcing_index)
 model_attrs = {
-  "institution_id"  :"AER",
-  "institution"     :"Research and Climate Group, Atmospheric and Environmental Research, 131 Hartwell Avenue, Lexington, MA 02421, USA",
+  "institution_id"  :institution_id,
+  "institution"     :institution,
   "source_id"       :source_id,
-  "version"         :"12.8",
-  "source"          :"LBLRTM 12.8 (2017): \naerosol: none\natmos: none\natmosChem: none\nland: none\nlandIce: none\nocean: none\nocnBgchem: none\nseaIce: none",
-                     # Needs to match entry for source_id in CMIP6 controlled vocabulary
+  "version"         :version,
+  "source"          :source_id,
   "further_info_url":"https://furtherinfo.es-doc.org/CMIP6." + institution_id + "." + source_id + ".rad-irf.none." + variant_label,
   "forcing_index"   :np.int32(forcing_index),
   "license"         :"CMIP6 model data produced by " + institution_id + " is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (https://creativecommons.org/licenses). " +
@@ -92,7 +116,9 @@ stand_names = ['upwelling_longwave_flux_in_air','upwelling_shortwave_flux_in_air
                'downwelling_longwave_flux_in_air','downwelling_shortwave_flux_in_air']
 
 for short, std in zip(short_names, stand_names) :
-    out_file_name = short + ".nc"
+    # File name is constructed per https://docs.google.com/document/d/1h0r8RZr_f3-8egBMMh7aqLwy3snpD6_MrDz1q8n5XUk/edit#
+    # fixed strings are table_id, experiment_id, grid_label
+    out_file_name = short + "_Efx_" + source_id + "_rad-irf_" + variant_label + "_gn" + ".nc"
     print('Creating ' + out_file_name)
     out_file = Dataset(out_file_name, mode='w', FORMAT='NETCDF4_CLASSIC')
     out_file.setncatts(drs_attrs)
@@ -112,6 +138,9 @@ for short, std in zip(short_names, stand_names) :
     v.setncatts({'variable_id'  :short,
                  'standard_name':std,
                  'units'        :'W m-2',
+                 '_FillValue'   :np.float32(-1.e+03),
+                 'missing_value':np.float32(-1.e+03),
+                 "cell_methods" :"area: point",
                  'coordinates'  :'lon lat time'})
     copyVar(atmos_file, out_file, 'profile_weight')
     out_file.close()

@@ -9,6 +9,7 @@
 from netCDF4 import Dataset
 import numpy as np
 import time, uuid, argparse
+import urllib.request, json
 # ---------------------------------------------------------------------------------
 # Copy a variable and all its attributes from one netCDF file to another
 #
@@ -28,9 +29,6 @@ parser = argparse.ArgumentParser(description='Create CMIP6/ESGF-compliant output
 parser.add_argument('--institution_id', type=str, \
                     default = "AER",
                     help='Institution ID, must match CMIP Controlled Vocabulary at https://github.com/WCRP-CMIP/CMIP6_CVs/blob/master/CMIP6_institution_id.json')
-parser.add_argument('--institution', type=str, \
-                    default = "Research and Climate Group, Atmospheric and Environmental Research, 131 Hartwell Avenue, Lexington, MA 02421, USA", \
-                    help='Institution, must match CMIP Controlled Vocabulary at https://github.com/WCRP-CMIP/CMIP6_CVs/blob/master/CMIP6_institution_id.json')
 parser.add_argument('--source_id', type=str, \
                     default = "LBLRTM-12-8",
                     help='Source ID, must match CMIP Controlled Vocabulary at https://github.com/WCRP-CMIP/CMIP6_CVs/blob/master/CMIP6_source_id.json')
@@ -49,11 +47,32 @@ parser.add_argument('--physics_index', type=int, \
 args = parser.parse_args()
 
 #
+# Check that institution_id, source_id are valid (forcing_index in 1..3? physics index > 0?)
+#   Use ids to obtain other text
+#
+with urllib.request.urlopen("https://raw.githubusercontent.com/WCRP-CMIP/CMIP6_CVs/master/CMIP6_institution_id.json") as url:
+    institution_ids = json.loads(url.read().decode())
+
+if(args.institution_id in institution_ids['institution_id'].keys()):
+    institution_id = args.institution_id
+    institution = institution_ids['institution_id'][institution_id]
+else:
+    print("institution_id {} is not in CMIP6 Controlled Vocabulary".format(args.institution_id))
+    sys.exit(1)
+
+with urllib.request.urlopen("https://raw.githubusercontent.com/WCRP-CMIP/CMIP6_CVs/master/CMIP6_source_id.json") as url:
+    source_ids = json.loads(url.read().decode())
+
+if(args.source_id in source_ids['source_id'].keys()):
+    source_id      = args.source_id
+    institution = institution_ids['institution_id'][args.institution_id]
+
+
+#
 # Model/institution specific attributes
 #
-institution_id = args.institution_id
-institution    = args.institution
-source_id      = args.source_id
+
+
 source         = args.source
 version        = args.version
 physics_index = np.int32(args.physics_index)
@@ -100,7 +119,7 @@ drs_attrs = {
 expt_attrs = {
   "Conventions"         :"CF-1.7 CMIP-6.2",
   "mip_era"             :"CMIP6",
-  "experiment"          :"rad_irf",
+  "experiment"          :"offline assessment of radiative transfer parmeterizations in clear skies",
   "sub_experiment"      :"none",
   "product"             :"model-output",
   "realization_index"   :np.int32(1),

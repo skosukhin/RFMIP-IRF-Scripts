@@ -26,18 +26,9 @@ atmos_file = Dataset('multiple_input4MIPs_radiation_RFMIP_UColorado-RFMIP-1-1_no
 # or from https://esgf-node.llnl.gov/search/input4mips/ ; search for "RFMIP"
 
 parser = argparse.ArgumentParser(description='Create CMIP6/ESGF-compliant output files for RFMIP-IRF.')
-parser.add_argument('--institution_id', type=str, \
-                    default = "AER",
-                    help='Institution ID, must match CMIP Controlled Vocabulary at https://github.com/WCRP-CMIP/CMIP6_CVs/blob/master/CMIP6_institution_id.json')
 parser.add_argument('--source_id', type=str, \
                     default = "LBLRTM-12-8",
                     help='Source ID, must match CMIP Controlled Vocabulary at https://github.com/WCRP-CMIP/CMIP6_CVs/blob/master/CMIP6_source_id.json')
-parser.add_argument('--source', type=str, \
-                    default = "LBLRTM 12.8 (2017): \naerosol: none\natmos: none\natmosChem: none\nland: none\nlandIce: none\nocean: none\nocnBgchem: none\nseaIce: none",
-                    help='Source ID, must match CMIP Controlled Vocabulary at https://github.com/WCRP-CMIP/CMIP6_CVs/blob/master/CMIP6_source_id.json')
-parser.add_argument('--version', type=str, \
-                    default = "12.8", \
-                    help='Forcing index (1 = all available greenhouse gases; 2 =  CO2, CH4, N2O, CFC11eq;  3 = CO2, CH4, N2O, CFC12eq, HFC-134eq)')
 parser.add_argument('--forcing_index', type=int, \
                     default = 1,      \
                     help='Forcing index (1 = all available greenhouse gases; 2 =  CO2, CH4, N2O, CFC11eq;  3 = CO2, CH4, N2O, CFC12eq, HFC-134eq)')
@@ -47,43 +38,39 @@ parser.add_argument('--physics_index', type=int, \
 args = parser.parse_args()
 
 #
-# Check that institution_id, source_id are valid (forcing_index in 1..3? physics index > 0?)
-#   Use ids to obtain other text
+# Check that source_id is valid 
+#   Use source_id to obtain other text
 #
-with urllib.request.urlopen("https://raw.githubusercontent.com/WCRP-CMIP/CMIP6_CVs/master/CMIP6_institution_id.json") as url:
-    institution_ids = json.loads(url.read().decode())
+with urllib.request.urlopen("https://raw.githubusercontent.com/PCMDI/cmip6-cmor-tables/master/Tables/CMIP6_CV.json") as url:
+    cmip6 = json.loads(url.read().decode())
 
-if(args.institution_id in institution_ids['institution_id'].keys()):
-    institution_id = args.institution_id
-    institution = institution_ids['institution_id'][institution_id]
+if(args.source_id in cmip6['CV']['source_id'].keys()):
+    source_id      = args.source_id
+    source         = cmip6['CV']['source_id'][source_id]['source']
+    institution_id = cmip6['CV']['source_id'][source_id]['institution_id'][0]
+    institution    = cmip6['CV']['institution_id'][institution_id]
+    physics_index = np.int32(args.physics_index)
+    forcing_index = np.int32(args.forcing_index)
 else:
-    print("institution_id {} is not in CMIP6 Controlled Vocabulary".format(args.institution_id))
+    print("source_id {} is not in CMIP6 Controlled Vocabulary".format(args.source_id))
     sys.exit(1)
 
-with urllib.request.urlopen("https://raw.githubusercontent.com/WCRP-CMIP/CMIP6_CVs/master/CMIP6_source_id.json") as url:
-    source_ids = json.loads(url.read().decode())
+if (forcing_index < 1 ) or (forcing_index > 3):
+    print('forcing_index must be 1, 2, or 3 (1 = all available greenhouse gases; 2 =  CO2, CH4, N2O, CFC11eq;  3 = CO2, CH4, N2O, CFC12eq, HFC-134eq)')
+    sys.exit(1)
 
-if(args.source_id in source_ids['source_id'].keys()):
-    source_id      = args.source_id
-    institution = institution_ids['institution_id'][args.institution_id]
-
+if (physics_index < 1 ):
+    print('physics_index must be positive')
+    sys.exit(1)
 
 #
 # Model/institution specific attributes
 #
-
-
-source         = args.source
-version        = args.version
-physics_index = np.int32(args.physics_index)
-forcing_index = np.int32(args.forcing_index)
-
 variant_label  = "r1i1p{0}f{1}".format(physics_index,forcing_index)
 model_attrs = {
   "institution_id"  :institution_id,
   "institution"     :institution,
   "source_id"       :source_id,
-  "version"         :version,
   "source"          :source_id,
   "further_info_url":"https://furtherinfo.es-doc.org/CMIP6." + institution_id + "." + source_id + ".rad-irf.none." + variant_label,
   "forcing_index"   :np.int32(forcing_index),

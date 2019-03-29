@@ -38,7 +38,7 @@ parser.add_argument('--physics_index', type=int, \
 args = parser.parse_args()
 
 #
-# Check that source_id is valid 
+# Check that source_id is valid
 #   Use source_id to obtain other text
 #
 with urllib.request.urlopen("https://raw.githubusercontent.com/PCMDI/cmip6-cmor-tables/master/Tables/CMIP6_CV.json") as url:
@@ -56,7 +56,7 @@ else:
     sys.exit(1)
 
 if (forcing_index < 1 ) or (forcing_index > 3):
-    print('forcing_index must be 1, 2, or 3 (1 = all available greenhouse gases; 2 =  CO2, CH4, N2O, CFC11eq;  3 = CO2, CH4, N2O, CFC12eq, HFC-134eq)')
+    print('forcing_index must be 1, 2, or 3 (1 = all available greenhouse gases; 2 =  CO2, CH4, N2O, CFC12, CFC11eq;  3 = CO2, CH4, N2O, CFC12eq, HFC-134eq)')
     sys.exit(1)
 
 if (physics_index < 1 ):

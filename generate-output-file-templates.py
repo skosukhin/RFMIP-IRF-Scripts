@@ -1,9 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Prepare templates for output files from offline radiative transfer calculations
 #   suitable for publishing on the Earth System Grid
 #
-# Robert Pincus, Robert.Pincus@colorado.edu, 2016-2017
+# Robert Pincus, Robert.Pincus@colorado.edu, 2016-2019
 #
 # ---------------------------------------------------------------------------------
 from netCDF4 import Dataset
@@ -31,7 +31,7 @@ parser.add_argument('--source_id', type=str, \
                     help='Source ID, must match CMIP Controlled Vocabulary at https://github.com/WCRP-CMIP/CMIP6_CVs/blob/master/CMIP6_source_id.json')
 parser.add_argument('--forcing_index', type=int, \
                     default = 1,      \
-                    help='Forcing index (1 = all available greenhouse gases; 2 =  CO2, CH4, N2O, CFC11eq;  3 = CO2, CH4, N2O, CFC12eq, HFC-134eq)')
+                    help='Forcing index (1 = all available greenhouse gases; 2 =  CO2, CH4, N2O, CFC12, CFC11eq;  3 = CO2, CH4, N2O, CFC12eq, HFC-134eq)')
 parser.add_argument('--physics_index', type=int, \
                     default = 1,      \
                     help='Physics index, e.g. for different approximations')

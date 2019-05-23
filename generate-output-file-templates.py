@@ -21,7 +21,7 @@ def copyVar(nc_in, nc_out, name, newname=None) :
 	nc_out.variables[newname][:] = nc_in.variables[name][:]
 # ---------------------------------------------------------------------------------
 
-atmos_file = Dataset('multiple_input4MIPs_radiation_RFMIP_UColorado-RFMIP-1-1_none.nc', mode='r')
+atmos_file = Dataset('multiple_input4MIPs_radiation_RFMIP_UColorado-RFMIP-1-2_none.nc', mode='r')
 # Available from https://www.earthsystemcog.org/projects/rfmip/resources/
 # or from https://esgf-node.llnl.gov/search/input4mips/ ; search for "RFMIP"
 
